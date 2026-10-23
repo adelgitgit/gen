@@ -6,6 +6,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from numpy.linalg import norm
 from numpy import random
+from veg_cipher import veg_encrypt
 
 MODEL = 'qwen2.5:1.5b'
 LEADER_SYSTEM = """
@@ -43,7 +44,7 @@ class Gen_Rev:
 
 
     def get_ciphertext(self):
-        cipher = random.choice(["rot", "caesar"])
+        cipher = random.choice(["rot", "caesar",'veg'])
         cipher_text = ''
 
         if cipher == 'rot':
@@ -51,7 +52,12 @@ class Gen_Rev:
         elif cipher == 'caesar':
 
             random_key = random.choice([_ for _ in range(26)])
-            cipher_text = caesar_cipher(self.current_leader_command,random_key)  
+            cipher_text = caesar_cipher(self.current_leader_command,random_key)
+
+        elif cipher == 'veg':
+            random_key = self.client.generate(MODEL,prompt=f'just produce a random word.',stream=False,keep_alive=False,options={'temperature' : 2.0})
+            cipher_text = veg_encrypt(self.current_leader_command,random_key['response'])
+
 
         return cipher_text 
 
@@ -61,5 +67,7 @@ class Gen_Rev:
          sim_score = self.sentence_model.similarity(embs[0],embs[1])
 
          return sim_score.item()
+
+
 
 
